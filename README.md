@@ -1,4 +1,4 @@
-Перед запуском в папке /app написать npm install. Запуск через в папке /app через npm run start
+Перед запуском в папке /app написать npm install. Запуск в папке /app через npm run start
 
 ---
 
