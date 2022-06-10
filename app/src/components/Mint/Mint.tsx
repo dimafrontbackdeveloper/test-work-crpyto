@@ -1,10 +1,10 @@
-import { useRef } from 'react';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import { actions } from '../../store/actions/mintActions/mintActions';
 import { useAppSelector } from '../../store/hooks/hooks';
+import detectEthereumProvider from '@metamask/detect-provider';
 
 const Mint = () => {
   const dispatch = useDispatch();
@@ -50,20 +50,52 @@ const Mint = () => {
     dispatch(actions.plusCountOfClicked());
   };
 
+  const requestAccount = async () => {
+    console.log('requesting account...');
+
+    // проверка есть кошелек
+    const provider: any = await detectEthereumProvider();
+    if (provider) {
+      // если кошелек есть
+      console.log('detected');
+
+      try {
+        const account = await provider.request({
+          method: 'eth_requestAccounts',
+        });
+
+        localStorage.setItem('wallet', account);
+        window.location.replace('/mint');
+      } catch (e) {
+        console.log(e);
+      }
+    } else {
+      console.log('no detected');
+    }
+  };
+
   return (
     <div>
-      {isAuth ? (
+      {localStorage.getItem('wallet') ? (
         <div>
-          <div>{time}</div>
-          <button
-            className={`${(isDisabled || countOfClicked === maxCountOfClicked) && 'disabled'}`}
-            onClick={setCountOfClicked}>
-            Click
-          </button>
-          <div>{countOfClicked}</div>
+          {isAuth ? (
+            <div>
+              <div>{time}</div>
+              <button
+                className={`${(isDisabled || countOfClicked === maxCountOfClicked) && 'disabled'}`}
+                onClick={setCountOfClicked}>
+                Click
+              </button>
+              <div>{countOfClicked}</div>
+            </div>
+          ) : (
+            <Navigate to="/login" />
+          )}
         </div>
       ) : (
-        <Navigate to="/login" />
+        <div>
+          <button onClick={requestAccount}>Connect to Metamask</button>
+        </div>
       )}
     </div>
   );
